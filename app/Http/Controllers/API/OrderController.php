@@ -17,6 +17,9 @@ class OrderController extends Controller
         private OrderService $orderService
     ){}
 
+    /**
+     * List open orders by symbol
+     */
     public function list(Request $request)
     {
         $symbol = $request->query('symbol', 'BTC');
@@ -28,6 +31,9 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 
+    /**
+     * Create a new limit order
+     */
     public function create(Request $request)
     {
         $data = $request->validate([
@@ -43,6 +49,9 @@ class OrderController extends Controller
         return response()->json($order );
     }
 
+    /**
+     * Cancel an order
+     */
     public function cancel(Request $request, Order $order)
     {
         $user = $request->user();

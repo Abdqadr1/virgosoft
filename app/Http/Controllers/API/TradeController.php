@@ -8,6 +8,9 @@ use App\Models\Trade;
 class TradeController extends Controller
 {
 
+    /**
+     * Get all-time commission from trades
+     */
     public function allTimeCommission()
     {
         return response()->json([

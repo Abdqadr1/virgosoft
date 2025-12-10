@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 class TokenController extends Controller
 {
 
+    /**
+     * List all tokens
+     */
     public function list(Request $request)
     {
         return response()->json(
@@ -17,6 +20,9 @@ class TokenController extends Controller
         );
     }
 
+    /**
+     * Add a new token
+     */
     public function add(Request $request)
     {
         $request->validate([

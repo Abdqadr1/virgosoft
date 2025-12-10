@@ -14,7 +14,7 @@ return new class extends Migration
 
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users', 'id')->cascadeOnDelete();
             $table->string('symbol', 10);
             $table->enum('side', ['buy', 'sell']);
             $table->decimal('price', 28, 8);
@@ -28,8 +28,8 @@ return new class extends Migration
 
         Schema::create('trades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('buy_order_id')->constrained('orders', 'id')->nullOnDelete();
-            $table->foreignId('sell_order_id')->constrained('orders', 'id')->nullOnDelete();
+            $table->foreignId('buy_order_id')->constrained('orders', 'id')->noActionOnDelete();
+            $table->foreignId('sell_order_id')->constrained('orders', 'id')->noActionOnDelete();
             $table->string('symbol', 10);
             $table->decimal('price', 28, 8);
             $table->decimal('amount', 28, 8);

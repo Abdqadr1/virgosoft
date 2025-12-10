@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Platform Account',
                 'password' => bcrypt('secret'),
-                'balance' => 0
+                'balance' => 0,
+                'email_verified_at' => now(),
             ]
         );
     }
