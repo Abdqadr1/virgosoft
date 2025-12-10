@@ -1,47 +1,32 @@
-<script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard().url,
-    },
-];
-</script>
-
 <template>
-    <Head title="Dashboard" />
-
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-        >
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
-            </div>
-            <div
-                class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-        </div>
-    </AppLayout>
+    <div class="container mx-auto p-6">
+        <h2 class="text-xl font-bold mb-4">Dashboard</h2>
+        <OrderForm />
+        <WalletOverview />
+        <OrderList />
+        <Orderbook />
+    </div>
 </template>
+
+<script lang="ts" setup>
+import OrderForm from "@/components/OrderForm.vue";
+import WalletOverview from "@/components/WalletOverview.vue";
+import OrderList from "@/components/OrderList.vue";
+import Orderbook from "@/components/Orderbook.vue";
+import { useWallet } from "@/composables/useWallet";
+import { useOrders } from "@/composables/useOrders";
+import { useOrderbook } from "@/composables/useOrderbook";
+import { usePusher } from "@/composables/usePusher";
+
+const { fetchProfile } = useWallet();
+const { fetchOrders } = useOrders();
+const { fetchOrderbook } = useOrderbook();
+
+const userId = window.App.user.id as number;
+
+usePusher(userId, () => {
+    fetchProfile();
+    fetchOrders("BTC");
+    fetchOrderbook("BTC");
+});
+</script>
