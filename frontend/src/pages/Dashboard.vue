@@ -1,44 +1,34 @@
 <template>
-    <div class="container mx-auto p-6">
-        <h2 class="text-xl font-bold mb-4">Dashboard</h2>
-        <OrderForm />
-        <!-- <WalletOverview />
-        <OrderList />
-        <Orderbook /> -->
+    <div>
+        <NavBar />
+        <div class="max-w-4xl mx-auto mt-8 px-4">
+            <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+            <p class="text-gray-700">Welcome to your dashboard. This view is available only when logged in.</p>
+
+            <!-- placeholder content -->
+            <div class="mt-6 bg-white shadow rounded p-4">
+                <p class="text-sm text-gray-600">Protected content goes here.</p>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import OrderForm from "../components/OrderForm.vue";
-// import WalletOverview from "../components/WalletOverview.vue";
-// import OrderList from "../components/OrderList.vue";
-// import Orderbook from "../components/Orderbook.vue";
-import { useWallet } from "../composables/useWallet";
-import { useOrders } from "../composables/useOrders";
-// import { useOrderbook } from "../composables/useOrderbook";
-import { usePusher } from "../composables/usePusher";
-import { useAuth } from "../composables/useAuth";
 import { onMounted } from "vue";
+import { useRouter } from "vue-router";
+import NavBar from "../components/NavBar.vue";
+import useAuth from "../composables/useAuth";
 
-const { checkAuth } = useAuth();
-const { fetchProfile } = useWallet();
-const { fetchOrders } = useOrders();
-// const { fetchOrderbook } = useOrderbook();
+const router = useRouter();
+const { isLoggedIn } = useAuth();
 
 onMounted(() => {
-    
-    checkAuth().then(() => {
-        console.log("User authenticated");
-    });
-
+    if (!isLoggedIn.value) {
+        router.push("/login");
+    }
 });
-
-
-// const userId = window.App.user.id;
-
-// usePusher(userId, () => {
-//     fetchProfile();
-//     // fetchOrders("BTC");
-//     // fetchOrderbook("BTC");
-// });
 </script>
+
+<style scoped>
+/* small styling if needed */
+</style>

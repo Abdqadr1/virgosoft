@@ -31,18 +31,18 @@
     </form>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { ref } from "vue";
 import { useOrders } from "../composables/useOrders";
 
-const symbol = ref<"BTC" | "ETH">("BTC");
-const side = ref<"buy" | "sell">("buy");
-const price = ref<number | null>(null);
-const amount = ref<number | null>(null);
+const symbol = ref("BTC");
+const side = ref("buy");
+const price = ref(null);
+const amount = ref(null);
 
 const { placeOrder } = useOrders();
 
-const submit = async (): Promise<void> => {
+const submit = async () => {
     if (!price.value || !amount.value) return;
     await placeOrder({
         symbol: symbol.value,
@@ -57,11 +57,5 @@ const submit = async (): Promise<void> => {
 </script>
 
 <style scoped>
-.input {
-    @apply border rounded p-2 w-full;
-}
 
-.btn-primary {
-    @apply bg-blue-600 text-white px-4 py-2 rounded;
-}
 </style>
