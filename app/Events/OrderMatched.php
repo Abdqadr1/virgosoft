@@ -36,8 +36,24 @@ class OrderMatched implements ShouldBroadcast
 
     public function broadcastWith()
     {
+        // keep payload small but useful: trade + order ids + usd volume + commission
         return [
-            'trade' => $this->trade->toArray(),
+            'trade' => [
+                'id' => $this->trade->id,
+                'buy_order_id' => $this->trade->buy_order_id,
+                'sell_order_id' => $this->trade->sell_order_id,
+                'symbol' => $this->trade->symbol,
+                'price' => $this->trade->price,
+                'amount' => $this->trade->amount,
+                'usd_volume' => $this->trade->usd_volume,
+                'commission_usd' => $this->trade->commission_usd,
+                'created_at' => $this->trade->created_at->toDateTimeString(),
+            ],
         ];
+    }
+
+    public function broadcastAs()
+    {
+        return 'OrderMatched';
     }
 }

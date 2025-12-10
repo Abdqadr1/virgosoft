@@ -7,6 +7,15 @@ use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Class Order
+ * @property int $id
+ * @property float $commission
+ * @property float $price
+ * @property float $amount
+ * @property OrderStatus $status
+ * @property OrderSide $side
+ */
 class Order extends Model
 {
 

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->enum('side', ['buy', 'sell']);
             $table->decimal('price', 28, 8);
             $table->decimal('amount', 28, 8);
+            $table->decimal('usd_amount', 28, 8);
+            $table->decimal('commission', 28, 8)->default(0)->comment('commission in USD charged on buy order');
             $table->tinyInteger('status')->default(1)->comment('1=open,2=filled,3=cancelled');
             $table->timestamps();
             $table->index(['symbol', 'side', 'price', 'status']);
