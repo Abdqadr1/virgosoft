@@ -60,7 +60,9 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import NavBar from "../components/NavBar.vue";
 import { useOrders } from "../composables/useOrders";
 import { useFormat } from "../composables/useFormat";
@@ -68,98 +70,88 @@ import Swal from "sweetalert2";
 import api from "../api/axios";
 import Decimal from "decimal.js";
 
-export default {
-    name: "LimitOrderForm",
-    components: { NavBar },
-    setup() { 
-        const { formatCrypto } = useFormat();
-        return {
-            formatCrypto
-        }
-    },
-    data() {
-        return {
-            symbol: "",
-            side: "buy",
-            amount: null,
-            isLoading: false,
-            tokens: [],
-            tokensLoading: false,
-            tokensError: "",
-        };
-    },
-    mounted() {
-        this.fetchTokens();
-    },
-    methods: {
-        async fetchTokens() {
-            this.tokensLoading = true;
-            this.tokensError = "";
-            api("/tokens")
-                .then(res => {
-                    this.tokens = res.data || [];
-                })
-                .catch(() => {
-                    this.tokensError = "Unable to load tokens.";
-                })
-                .finally(() => {
-                    this.tokensLoading = false;
-                });
-        },
-        submit() {
-            if (!this.symbol || !this.side || !this.amount) {
-                Swal.fire("Error", "Please fill in all fields.", "error");
-                return;
-            }
+const router = useRouter();
+const { formatCrypto } = useFormat();
+const { placeOrder } = useOrders();
 
-            const payload = {
-                symbol: this.symbol,
-                side: this.side,
-                amount: this.amount,
-            };
+const symbol = ref("");
+const side = ref("buy");
+const amount = ref(null);
+const isLoading = ref(false);
+const tokens = ref([]);
+const tokensLoading = ref(false);
+const tokensError = ref("");
 
-            const { placeOrder } = useOrders();
-            this.isLoading = true;
-            placeOrder(payload)
-                .then(() => {
-                    Swal.fire({
-                        title: "Success",
-                        text: "Order placed successfully.",
-                        icon: "success",
-                        showCancelButton: true,
-                        confirmButtonText: "OK",
-                        cancelButtonText: "Wallet Overview",
-                    }).then((result) => {
-                        if (result.isDismissed) {
-                            this.$router.push("/");
-                            return;
-                        }
-                        this.clearForm();
-                    });
-                })
-                .catch((err) => {
-                    const error = err?.response?.data?.message || "Failed to place order.";
-                    Swal.fire("Error", error || "Invalid credentials", "error");
-                })
-                .finally(() => {
-                    this.isLoading = false;
-                });
-        },
-        clearForm() {
-            this.symbol = "";
-            this.side = "buy";
-            this.amount = null;
-        },
-    },
-    computed: {
-        calculatedVolume() {
-            let token = this.tokens.find(t => t.symbol === this.symbol);
-            if (!token || !this.amount) return '';
-            const a = new Decimal(this.amount);
-            const b = new Decimal(token.price_usd);
+const calculatedVolume = computed(() => {
+    let token = tokens.value.find(t => t.symbol === symbol.value);
+    if (!token || !amount.value) return '';
+    const a = new Decimal(amount.value);
+    const b = new Decimal(token.price_usd);
 
-            return this.formatCrypto(a.mul(b).toString());
-        }
-    }
+    return formatCrypto(a.mul(b).toString());
+});
+
+const fetchTokens = async () => {
+    tokensLoading.value = true;
+    tokensError.value = "";
+    api("/tokens")
+        .then(res => {
+            tokens.value = res.data || [];
+        })
+        .catch(() => {
+            tokensError.value = "Unable to load tokens.";
+        })
+        .finally(() => {
+            tokensLoading.value = false;
+        });
 };
+
+const clearForm = () => {
+    symbol.value = "";
+    side.value = "buy";
+    amount.value = null;
+};
+
+const submit = () => {
+    if (!symbol.value || !side.value || !amount.value) {
+        Swal.fire("Error", "Please fill in all fields.", "error");
+        return;
+    }
+
+    const payload = {
+        symbol: symbol.value,
+        side: side.value,
+        amount: amount.value,
+    };
+
+    isLoading.value = true;
+    placeOrder(payload)
+        .then(() => {
+            Swal.fire({
+                title: "Success",
+                text: "Order placed successfully.",
+                icon: "success",
+                showCancelButton: true,
+                confirmButtonText: "OK",
+                cancelButtonText: "Wallet Overview",
+            }).then((result) => {
+                if (result.isDismissed) {
+                    router.push("/");
+                    return;
+                }
+                clearForm();
+            });
+        })
+        .catch((err) => {
+            const error = err?.response?.data?.message || "Failed to place order.";
+            Swal.fire("Error", error || "Invalid credentials", "error");
+        })
+        .finally(() => {
+            isLoading.value = false;
+        });
+};
+
+onMounted(() => {
+    fetchTokens();
+});
 </script>
