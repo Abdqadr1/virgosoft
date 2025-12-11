@@ -30,12 +30,13 @@ class OrderMatched implements ShouldBroadcast
     public function broadcastOn()
     {
         return collect($this->userIds)
-            ->map(fn($id) => new PrivateChannel("match-up.$id"))
-            ->toArray();
+            ->map(fn($id) => new PrivateChannel("matchup.$id"))
+            ->all();
     }
 
     public function broadcastWith()
     {
+        logger()->info('Broadcasting OrderMatched event', ['trade_id' => $this->trade->id, 'user_ids' => $this->userIds]);
         return [
             'trade' => [
                 'id' => $this->trade->id,

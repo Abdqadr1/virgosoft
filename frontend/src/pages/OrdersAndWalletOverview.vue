@@ -93,14 +93,14 @@ import Swal from "sweetalert2";
 import useAuth from "../composables/useAuth";
 import { useOrders } from "../composables/useOrders";
 import api from "../api/axios";
-import { usePusher } from "../composables/usePusher";
 
 export default {
     components: { NavBar },
     setup() {
-        const { fetchUser } = useAuth();
+        const { fetchUser, user } = useAuth();
         const { fetchOrders, cancelOrder } = useOrders();
         return {
+            user,
             fetchUser,
             fetchOrders,
             cancelOrder
@@ -108,21 +108,35 @@ export default {
     },
     data() {
         return {
-            userId: null,
+            echo: null,
             balance: 0,
             assets: [],
             tokens: [],
             orders: [],
             recentTrades: [],
+            symbol: "BTCUSD",
             selectedSymbol: "BTC",
             orderbook: { bids: [], asks: [] },
             ws: undefined,
         };
     },
-    computed: {
-
-    },
     methods: {
+        pusherListen() {
+            this.echo = window.Echo;
+            this.echo.private(`matchup.${this.user.id}`)
+                .listen(".OrderMatched", (event) => {
+                    this.handleMatchUp(event.trade);
+                }).error((error) => {
+                    console.error("Error subscribing to channel:", error);
+                });
+
+            this.echo.connector.pusher.connection.bind('connected', function (err) {
+                console.log('Pusher connected successfully.');
+            });
+            this.echo.connector.pusher.connection.bind('error', function (err) {
+                console.error('Pusher connection error:', err);
+            });
+        },
         fetchTokens() {
             api("/tokens")
                 .then(res => { this.tokens = res.data || [] })
@@ -164,30 +178,29 @@ export default {
                 "bg-red-100 text-red-800": ["cancelled", "canceled"].includes((status || "").toLowerCase()),
             };
         },
-        applyOrderMatchToOrders(evt) {
-            const id = evt.orderId;
-            const idx = this.orders.findIndex(o => (o.id || o.orderId) === id);
-            if (idx >= 0) {
-                const o = { ...this.orders[idx] };
-                o.filled = (o.filled ?? 0) + (evt.size ?? evt.filledSize ?? 0);
-                if (evt.status) o.status = evt.status;
-                this.orders.splice(idx, 1, o);
-            } else {
-                this.fetchOrders();
-            }
+        handleMatchUp(trade) {
+            if (!trade) return;
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Trade matched: ${trade.amount} ${trade.symbol} at $${Number(trade.price).toFixed(2)}`,
+                showConfirmButton: false,
+                timer: 3000
+            });
+
+            Promise.all([this.fetchProfile(), fetchOrderbook(), this.fetchUserOrders()]);
         },
     },
     mounted() {
         Promise.all([this.fetchTokens(), this.fetchProfile(), this.fetchUserOrders()])
             .then(() => {
-                console.log("Initial data loaded");
-                usePusher(null, (evt) => {
-                    console.log("Received order match event:", evt);
-                    this.applyOrderMatchToOrders(evt);
-                });
+                this.pusherListen();
             });
     },
     unmounted() {
+        if (this.echo) this.echo.disconnect();
         try { this.ws && this.ws.close(); } catch { }
     },
     watch: {

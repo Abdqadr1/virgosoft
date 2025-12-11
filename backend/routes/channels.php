@@ -1,8 +1,9 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel(
-    'match-up.{id}',
-    fn($user, $id) => intval($user->id) === intval($id)
+    'matchup.{id}',
+    fn(User $user, int $id) => intval($user->id) === intval($id)
 );

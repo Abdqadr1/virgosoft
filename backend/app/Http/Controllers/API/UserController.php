@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,5 +65,12 @@ class UserController extends Controller
             'token' => $token,
             'user' => $user,
         ];
+    }
+
+    public function broadcastAuth(Request $request)
+    {
+        logger()->info('Broadcast auth request received', ['user_id' => $request->user()->id]);
+        $user = $request->user();
+        // Broadcast::resolveAuthenticatedUserUsing(fn ($request) => $user );
     }
 }

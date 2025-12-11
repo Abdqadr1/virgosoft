@@ -4,6 +4,7 @@ import api from "../api/axios";
 import Swal from "sweetalert2";
 
 const token = ref(localStorage.getItem("auth_token") || "");
+const user = ref(JSON.parse(localStorage.getItem("auth_user") || "null"));
 const isLoggedIn = ref(!!token.value);
 
 watch(token, (val) => {
@@ -23,11 +24,13 @@ export default function useAuth() {
 
     const checkAuth = async () => {
         const t = localStorage.getItem("auth_token");
-        if (!t) {
+        const u = localStorage.getItem("auth_user");
+        if (!t || !u) {
             router.push("/login");
             return false;
         }
         token.value = t;
+        user.value = t;
         return true;
     };
 
@@ -80,6 +83,7 @@ export default function useAuth() {
         login,
         logout,
         token,
+        user,
         isLoggedIn,
         setToken,
         clear,

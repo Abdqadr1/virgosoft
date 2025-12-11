@@ -10,19 +10,15 @@ window.Echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-    forceTLS: false,
-    encrypted: false,
-    wsPort: 6001,
-    wssPort: 6001,
-    wsHost: '127.0.0.1',
-    enabledTransports: ["ws"],
+    forceTLS: true,
 
     // IMPORTANT WHEN FRONTEND IS SEPARATE
-    authEndpoint: `${import.meta.env.VITE_SERVER_URL}/broadcasting/auth`,
+    authEndpoint: `${import.meta.env.VITE_SERVER_URL}/api/broadcasting/auth`,
 
     auth: {
         headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            Accept: "application/json",
         },
     },
 });

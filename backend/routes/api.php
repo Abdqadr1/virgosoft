@@ -5,11 +5,13 @@ use App\Http\Controllers\API\TokenController;
 use App\Http\Controllers\API\TradeController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Broadcasting\BroadcastController;
 
 
 Route::post('/authenticate', [UserController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(callback: function () {
+    Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate']);
 
     Route::get('/commission/all-time', [TradeController::class, 'allTimeCommission']);
 
