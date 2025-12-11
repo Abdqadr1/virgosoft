@@ -62,11 +62,14 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
+This will run the migrations and seed the database with test users, assets, and tokens.
+
 ## 6. Serve the Backend
 
 ```bash
 composer run dev
 ```
+
 This will serve the backend, start the queue and so on.
 Backend will be available at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**.
 You can also view the API documentation page at: **[http://127.0.0.1:8000/docs/api](http://127.0.0.1:8000/docs/api)**.
@@ -76,6 +79,8 @@ You can also view the API documentation page at: **[http://127.0.0.1:8000/docs/a
 # 🎨 Frontend Setup (Vue 3 + Vite)
 
 ## 1. Navigate to Frontend Folder
+
+Open another terminal
 
 ```bash
 cd frontend
