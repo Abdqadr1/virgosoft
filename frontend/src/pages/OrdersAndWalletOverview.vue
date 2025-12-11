@@ -201,7 +201,6 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (echo.value && channelName.value) {
-        console.log('leaving channel:', channelName.value);
         echo.value.leave(channelName.value);
     }
 });
