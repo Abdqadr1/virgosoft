@@ -46,7 +46,6 @@ class OrderMatched implements ShouldBroadcast
                 'price' => $this->trade->price,
                 'amount' => $this->trade->amount,
                 'usd_volume' => $this->trade->usd_volume,
-                'commission_usd' => $this->trade->commission_usd,
                 'created_at' => $this->trade->created_at->toDateTimeString(),
             ],
         ];

@@ -54,10 +54,6 @@ const submit = async () => {
 
     isSubmitting.value = true;
     login(email.value, password.value, '/')
-        .then(() => {})
-        .catch((error) => {
-            errorMessage.value = error?.response?.data?.message || "Login failed. Please try again.";
-        })
         .finally(() => {
             isSubmitting.value = false;
         });

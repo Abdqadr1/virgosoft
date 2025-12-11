@@ -167,6 +167,8 @@ class OrderService {
         return DB::transaction(function () use ($user, $data) {
 
             $price = Token::where('symbol', $data['symbol'])->value('price_usd');
+
+            // volume in USD
             $totalUsd = bcmul($price, $data['amount'], 8);
             $order = new Order([
                 'user_id' => $user->id,
@@ -230,22 +232,24 @@ class OrderService {
     public function cancelOrder(int $orderId, User $user){
 
         return DB::transaction(function () use ($orderId, $user) {
-            $order = Order::where('id', $orderId)->lockForUpdate()->firstOrFail();
+            $order = Order::whereKey($orderId)->lockForUpdate()->firstOrFail();
             if ($order->user_id !== $user->id) return response()->json(['error' => 'Not allowed'], 403);
             if ($order->status != OrderStatus::OPEN) return response()->json(['error' => 'Order not open'], 400);
 
             // Release locked funds / assets
             if ($order->side === OrderSide::BUY) {
-                $usdLocked = bcmul($order->price, bcsub($order->amount, $order->filled_amount, 8), 8);
                 $dbUser = User::where('id', $user->id)->lockForUpdate()->first();
-                $dbUser->balance = bcadd($dbUser->balance, $usdLocked, 8);
+                $dbUser->balance = bcadd($dbUser->balance, $order->usd_amount, 8);
                 $dbUser->save();
             } else {
                 // seller: move locked_amount back to amount
-                $asset = Asset::where('user_id', $user->id)->where('symbol', $order->symbol)->lockForUpdate()->first();
-                $remaining = bcsub($order->amount, $order->filled_amount, 8);
-                $asset->locked_amount = bcsub($asset->locked_amount, $remaining, 8);
-                $asset->amount = bcadd($asset->amount, $remaining, 8);
+                $asset = Asset::where('user_id', $user->id)
+                            ->where('symbol', $order->symbol)
+                            ->lockForUpdate()
+                            ->first();
+
+                $asset->locked_amount = bcsub($asset->locked_amount, $order->amount, 8);
+                $asset->amount = bcadd($asset->amount, $order->amount, 8);
                 $asset->save();
             }
             $order->status = OrderStatus::CANCELLED;

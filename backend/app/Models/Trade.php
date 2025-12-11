@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 /**
  * Class Trade
@@ -18,14 +20,36 @@ use Illuminate\Database\Eloquent\Model;
 class Trade extends Model
 {
 
-    public function buyOrder()
+    public function buyOrder(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'buy_order_id');
     }
 
-    public function sellOrder()
+    public function sellOrder(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'sell_order_id');
+    }
+
+    public function buyer(): HasOneThrough {
+        return $this->hasOneThrough(
+            User::class,
+            Order::class,
+            'id',
+            'id',
+            'buy_order_id',
+            'user_id'
+        );
+    }
+
+    public function seller(): HasOneThrough {
+        return $this->hasOneThrough(
+            User::class,
+            Order::class,
+            'id',
+            'id',
+            'sell_order_id',
+            'user_id'
+        );
     }
     
 }

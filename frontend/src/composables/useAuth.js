@@ -50,7 +50,7 @@ export default function useAuth() {
             // redirect after login
             router.push(route);
         } catch (err) {
-            Swal.fire("Login Failed", err?.response?.data?.message || "Invalid credentials", "error");
+            Swal.fire("Login Failed", err?.response?.data?.message || "An error occurred", "error");
         }
     };
 
