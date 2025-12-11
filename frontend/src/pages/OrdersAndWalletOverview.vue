@@ -68,7 +68,7 @@
                                     <td class="py-2 pr-4 font-mono" :title="o.price">${{ formatCrypto(o.price) }}</td>
                                     <td class="py-2 pr-4 font-mono" :title="o.amount">{{ formatCrypto(o.amount) }}</td>
                                     <td class="py-2 pr-4 font-mono" :title="o.usd_amount">{{ formatCrypto(o.usd_amount)
-                                        }}</td>
+                                    }}</td>
                                     <td class="py-2 pr-4">
                                         <span class="px-2 py-0.5 rounded text-xs" :class="statusClass(o.status_name)">{{
                                             o.status_name }}</span>
@@ -105,24 +105,41 @@ const orders = ref([]);
 const recentTrades = ref([]);
 const selectedSymbol = ref("BTC");
 const userId = ref(null);
+const channelName = ref(null);
 
 // Methods
 const pusherListen = () => {
+    console.log('echo connecting')
     echo.value = window.Echo;
-    echo.value.private(`matchup.${user.value.id}`)
+
+    // Check if already connected
+    const pusher = echo.value.connector.pusher;
+    const connectionState = pusher.connection.state;
+
+    if (connectionState === 'connected') {
+        console.log('Pusher already connected.');
+    }
+
+    channelName.value = `matchup.${user.value.id}`;
+
+    echo.value.private(channelName.value)
         .listen(".OrderMatched", (event) => {
-            console.log("Received OrderMatched event:", event);
+            // console.log("Received OrderMatched event:", event);
             handleMatchUp(event.trade);
         }).error((error) => {
             console.error("Error subscribing to channel:", error);
         });
 
-    echo.value.connector.pusher.connection.bind('connected', function (err) {
+    const connectedHandler = () => {
         console.log('Pusher connected successfully.');
-    });
-    echo.value.connector.pusher.connection.bind('error', function (err) {
+    };
+
+    const errorHandler = (err) => {
         console.error('Pusher connection error:', err);
-    });
+    };
+
+    pusher.connection.bind('connected', connectedHandler);
+    pusher.connection.bind('error', errorHandler);
 };
 
 const fetchTokens = () => {
@@ -185,7 +202,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (echo.value) echo.value.disconnect();
+    if (echo.value && channelName.value) {
+        console.log('leaving channel:', channelName.value);
+        echo.value.leave(channelName.value);
+    }
 });
 
 </script>
