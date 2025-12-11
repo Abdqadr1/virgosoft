@@ -109,10 +109,8 @@ const channelName = ref(null);
 
 // Methods
 const pusherListen = () => {
-    console.log('echo connecting')
     echo.value = window.Echo;
 
-    // Check if already connected
     const pusher = echo.value.connector.pusher;
     const connectionState = pusher.connection.state;
 
