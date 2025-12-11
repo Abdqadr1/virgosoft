@@ -12,7 +12,8 @@
                         <div class="text-xs text-gray-500">USD</div>
                         <div class="font-mono text-sm">{{ formatCrypto(balance) }}</div>
                     </div>
-                    <div v-for="(asset, i) in assets" :key="asset.symbol || i" class="p-3 inline-flex flex-col gap-2 border rounded">
+                    <div v-for="(asset, i) in assets" :key="asset.symbol || i"
+                        class="p-3 inline-flex flex-col gap-2 border rounded">
                         <div class="text-xs text-gray-500">{{ asset.symbol }}</div>
                         <div class="font-mono text-sm" :title="asset.amount">{{ formatCrypto(asset.amount) }}</div>
                     </div>
@@ -33,8 +34,8 @@
                         <li v-for="trade in recentTrades" :key="trade.id"
                             class="flex justify-between font-mono text-sm">
                             <span>{{ trade.symbol }}</span>
-                            <span :title="trade.usd_volume">{{ formatCrypto(trade.usd_volume)}}</span>
-                            <span :title="trade.amount">{{ formatCrypto(trade.amount)}}</span>
+                            <span :title="trade.usd_volume">{{ formatCrypto(trade.usd_volume) }}</span>
+                            <span :title="trade.amount">{{ formatCrypto(trade.amount) }}</span>
                             <span :title="trade.price">${{ formatCrypto(trade.price) }}</span>
                         </li>
                     </ul>
@@ -66,9 +67,11 @@
                                     <td class="py-2 pr-4 font-mono">{{ o.side }}</td>
                                     <td class="py-2 pr-4 font-mono" :title="o.price">${{ formatCrypto(o.price) }}</td>
                                     <td class="py-2 pr-4 font-mono" :title="o.amount">{{ formatCrypto(o.amount) }}</td>
-                                    <td class="py-2 pr-4 font-mono" :title="o.usd_amount">{{ formatCrypto(o.usd_amount) }}</td>
+                                    <td class="py-2 pr-4 font-mono" :title="o.usd_amount">{{ formatCrypto(o.usd_amount)
+                                        }}</td>
                                     <td class="py-2 pr-4">
-                                        <span class="px-2 py-0.5 rounded text-xs" :class="statusClass(o.status_name)">{{ o.status_name }}</span>
+                                        <span class="px-2 py-0.5 rounded text-xs" :class="statusClass(o.status_name)">{{
+                                            o.status_name }}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -81,7 +84,8 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from "vue";
 import NavBar from "../components/NavBar.vue";
 import Swal from "sweetalert2";
 import useAuth from "../composables/useAuth";
@@ -89,106 +93,99 @@ import { useOrders } from "../composables/useOrders";
 import { useFormat } from "../composables/useFormat";
 import api from "../api/axios";
 
-export default {
-    components: { NavBar },
-    setup() {
-        const { fetchUser, user } = useAuth();
-        const { fetchOrders, cancelOrder } = useOrders();
-        const { formatCrypto } = useFormat();
-        return {
-            user,
-            fetchUser,
-            fetchOrders,
-            cancelOrder,
-            formatCrypto
-        };
-    },
-    data() {
-        return {
-            echo: null,
-            balance: 0,
-            assets: [],
-            tokens: [],
-            orders: [],
-            recentTrades: [],
-            selectedSymbol: "BTC",
-            orderbook: { bids: [], asks: [] },
-            ws: undefined,
-        };
-    },
-    methods: {
-        pusherListen() {
-            this.echo = window.Echo;
-            this.echo.private(`matchup.${this.user.id}`)
-                .listen(".OrderMatched", (event) => {
-                    console.log("Received OrderMatched event:", event);
-                    this.handleMatchUp(event.trade);
-                }).error((error) => {
-                    console.error("Error subscribing to channel:", error);
-                });
+const { fetchUser, user } = useAuth();
+const { fetchOrders } = useOrders();
+const { formatCrypto } = useFormat();
 
-            this.echo.connector.pusher.connection.bind('connected', function (err) {
-                console.log('Pusher connected successfully.');
-            });
-            this.echo.connector.pusher.connection.bind('error', function (err) {
-                console.error('Pusher connection error:', err);
-            });
-        },
-        fetchTokens() {
-            api("/tokens")
-                .then(res => { this.tokens = res.data || [] })
-                .catch(() => { })
-                .finally(() => { });
-        },
-        async fetchProfile() {
-            this.fetchUser().then(user => {
-                if (user && user.balance) {
-                    this.balance = user.balance;
-                    this.assets = user.assets || [];
-                    this.userId = user.id;
-                }
-            });
-        },
-        async fetchUserOrders() {
-            this.fetchOrders()
-                .then(data => {
-                    this.orders = data || [];
-                });
-        },
-        statusClass(status) {
-            return {
-                "bg-gray-100 text-gray-800": ["open", "pending"].includes((status || "").toLowerCase()),
-                "bg-green-100 text-green-800": ["filled"].includes((status || "").toLowerCase()),
-                "bg-red-100 text-red-800": ["cancelled", "canceled"].includes((status || "").toLowerCase()),
-            };
-        },
-        handleMatchUp(trade) {
-            if (!trade) return;
+const echo = ref(null);
+const balance = ref(0);
+const assets = ref([]);
+const tokens = ref([]);
+const orders = ref([]);
+const recentTrades = ref([]);
+const selectedSymbol = ref("BTC");
+const userId = ref(null);
 
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: `Trade matched: ${this.formatCrypto(trade.amount)} ${trade.symbol} at $${this.formatCrypto(trade.price)}`,
-                showConfirmButton: false,
-                timer: 5000
-            });
+// Methods
+const pusherListen = () => {
+    echo.value = window.Echo;
+    echo.value.private(`matchup.${user.value.id}`)
+        .listen(".OrderMatched", (event) => {
+            console.log("Received OrderMatched event:", event);
+            handleMatchUp(event.trade);
+        }).error((error) => {
+            console.error("Error subscribing to channel:", error);
+        });
 
-            if (trade.symbol === this.selectedSymbol && this.recentTrades.find(t => t.id === trade.id) === undefined) {
-                this.recentTrades.unshift(trade);
-            }
-
-            Promise.all([this.fetchProfile(), this.fetchUserOrders()]);
-        },
-    },
-    mounted() {
-        Promise.all([this.fetchTokens(), this.fetchProfile(), this.fetchUserOrders()])
-            .then(() => {
-                this.pusherListen();
-            });
-    },
-    unmounted() {
-        if (this.echo) this.echo.disconnect();
-    },
+    echo.value.connector.pusher.connection.bind('connected', function (err) {
+        console.log('Pusher connected successfully.');
+    });
+    echo.value.connector.pusher.connection.bind('error', function (err) {
+        console.error('Pusher connection error:', err);
+    });
 };
+
+const fetchTokens = () => {
+    api("/tokens")
+        .then(res => { tokens.value = res.data || [] })
+        .catch(() => { })
+        .finally(() => { });
+};
+
+const fetchProfile = async () => {
+    fetchUser().then(userData => {
+        if (userData && userData.balance) {
+            balance.value = userData.balance;
+            assets.value = userData.assets || [];
+            userId.value = userData.id;
+        }
+    });
+};
+
+const fetchUserOrders = async () => {
+    fetchOrders()
+        .then(data => {
+            orders.value = data || [];
+        });
+};
+
+const statusClass = (status) => {
+    return {
+        "bg-gray-100 text-gray-800": ["open", "pending"].includes((status || "").toLowerCase()),
+        "bg-green-100 text-green-800": ["filled"].includes((status || "").toLowerCase()),
+        "bg-red-100 text-red-800": ["cancelled", "canceled"].includes((status || "").toLowerCase()),
+    };
+};
+
+const handleMatchUp = (trade) => {
+    if (!trade) return;
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: `Trade matched: ${formatCrypto(trade.amount)} ${trade.symbol} at $${formatCrypto(trade.price)}`,
+        showConfirmButton: false,
+        timer: 5000
+    });
+
+    if (trade.symbol === selectedSymbol.value && recentTrades.value.find(t => t.id === trade.id) === undefined) {
+        recentTrades.value.unshift(trade);
+    }
+
+    Promise.all([fetchProfile(), fetchUserOrders()]);
+};
+
+// Lifecycle
+onMounted(() => {
+    Promise.all([fetchTokens(), fetchProfile(), fetchUserOrders()])
+        .then(() => {
+            pusherListen();
+        });
+});
+
+onUnmounted(() => {
+    if (echo.value) echo.value.disconnect();
+});
+
 </script>
