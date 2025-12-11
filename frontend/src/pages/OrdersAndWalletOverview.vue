@@ -169,7 +169,7 @@ export default {
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: `Trade matched: ${trade.amount} ${trade.symbol} at $${trade.price}`,
+                title: `Trade matched: ${this.formatCrypto(trade.amount)} ${trade.symbol} at $${this.formatCrypto(trade.price)}`,
                 showConfirmButton: false,
                 timer: 5000
             });
