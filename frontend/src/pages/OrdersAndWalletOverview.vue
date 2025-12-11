@@ -65,9 +65,9 @@
                                     <td class="py-2 pr-4">{{ o.symbol }}</td>
                                     <td class="py-2 pr-4 font-mono">{{ o.side }}</td>
                                     <td class="py-2 pr-4 font-mono" :title="o.price">${{ Number(o.price).toFixed(2) }}</td>
-                                    <td class="py-2 pr-4 font-mono" :title="o.amount">{{ Number(o.amount).toFixed(3) }}</td>
+                                    <td class="py-2 pr-4 font-mono" :title="o.amount">{{ Number(o.amount).toFixed(2) }}</td>
                                     <td class="py-2 pr-4 font-mono" :title="o.usd_amount">{{
-                                        Number(o.usd_amount).toFixed(4)}}</td>
+                                        Number(o.usd_amount).toFixed(2)}}</td>
                                     <td class="py-2 pr-4">
                                         <span class="px-2 py-0.5 rounded text-xs" :class="statusClass(o.status_name)">{{
                                             o.status_name }}</span>
@@ -120,6 +120,7 @@ export default {
             this.echo = window.Echo;
             this.echo.private(`matchup.${this.user.id}`)
                 .listen(".OrderMatched", (event) => {
+                    console.log("Received OrderMatched event:", event);
                     this.handleMatchUp(event.trade);
                 }).error((error) => {
                     console.error("Error subscribing to channel:", error);
@@ -172,7 +173,7 @@ export default {
                 timer: 5000
             });
 
-            if (trade.symbol === this.selectedSymbol) {
+            if (trade.symbol === this.selectedSymbol && this.recentTrades.find(t => t.id === trade.id) === undefined) {
                 this.recentTrades.unshift(trade);
             }
 

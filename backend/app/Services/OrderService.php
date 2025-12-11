@@ -206,10 +206,10 @@ class OrderService {
                 $dbUser->save();
             } else {
                 // lock seller asset row
-                $asset = Asset::where('user_id', $user->id)
-                    ->where('symbol', $data['symbol'])
-                    ->lockForUpdate()
-                    ->first();
+                $asset = $user->assets()
+                        ->where('symbol', $data['symbol'])
+                        ->lockForUpdate()
+                        ->first();
 
                 if (!$asset || bccomp($asset->amount, $data['amount'], 8) < 0) {
                     throw new OrderException('Insufficient asset amount', 422);
