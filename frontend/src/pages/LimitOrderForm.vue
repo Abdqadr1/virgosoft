@@ -39,6 +39,14 @@
                             class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-gray-400 focus:ring-0 focus:outline-none" />
                     </div>
 
+                    <!-- Volume -->
+                    <div>
+                        <label for="volume" class="block text-sm font-medium text-gray-700">Estimated Volume</label>
+                        <input id="volume" type="text" v-model="calculatedVolume" readonly
+                            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-gray-900 shadow-sm focus:outline-none focus:ring-0" />
+                    </div>
+
+
                     <div class="pt-2">
                         <button type="submit"
                             class="inline-flex items-center justify-center w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow hover:bg-indigo-700 focus:outline-none focus:ring-0"
@@ -55,12 +63,20 @@
 <script>
 import NavBar from "../components/NavBar.vue";
 import { useOrders } from "../composables/useOrders";
+import { useFormat } from "../composables/useFormat";
 import Swal from "sweetalert2";
 import api from "../api/axios";
+import Decimal from "decimal.js";
 
 export default {
     name: "LimitOrderForm",
     components: { NavBar },
+    setup() { 
+        const { formatCrypto } = useFormat();
+        return {
+            formatCrypto
+        }
+    },
     data() {
         return {
             symbol: "",
@@ -135,5 +151,15 @@ export default {
             this.amount = null;
         },
     },
+    computed: {
+        calculatedVolume() {
+            let token = this.tokens.find(t => t.symbol === this.symbol);
+            if (!token || !this.amount) return '';
+            const a = new Decimal(this.amount);
+            const b = new Decimal(token.price_usd);
+
+            return this.formatCrypto(a.mul(b).toString());
+        }
+    }
 };
 </script>

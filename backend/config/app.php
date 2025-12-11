@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'match_scale' => 16,
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

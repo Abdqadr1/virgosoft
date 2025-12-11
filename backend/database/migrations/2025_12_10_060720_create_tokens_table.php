@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->string('symbol', 10)->unique();
-            $table->decimal('price_usd', 28, 8);
+            $table->decimal('price_usd', 32, 16);
             $table->timestamps();
         });
 

@@ -22,6 +22,7 @@ class MatchingService {
         // For a sell: find first buy where buy.price >= sell.price
 
         DB::transaction(function () use ($newOrder) {
+            $mathScale = config('app.match_scale');
             // Lock the new order for update
             $order = Order::where('id', $newOrder->id)->lockForUpdate()->first();
 
@@ -56,7 +57,7 @@ class MatchingService {
             $buyerOrder = $side === OrderSide::BUY ? $order : $counter;
             $sellerOrder = $side === OrderSide::SELL ? $order : $counter;
 
-            $usdVolume = bcmul($buyerOrder->price, $amount, 8);
+            $usdVolume = bcmul($buyerOrder->price, $amount, $mathScale);
 
             // Lock buyer user and seller asset rows
             $buyer = User::where('id', $buyerOrder->user_id)->lockForUpdate()->first();
@@ -83,20 +84,20 @@ class MatchingService {
             }
 
             // Move asset from seller locked_amount to buyer amount
-            if (!$sellerAsset || bccomp($sellerAsset->locked_amount, $amount, 8) < 0) {
+            if (!$sellerAsset || bccomp($sellerAsset->locked_amount, $amount, $mathScale) < 0) {
                 // not enough locked asset (shouldn't happen) - abort
                 return;
             }
 
-            $sellerAsset->locked_amount = bcsub($sellerAsset->locked_amount, $amount, 8);
+            $sellerAsset->locked_amount = bcsub($sellerAsset->locked_amount, $amount, $mathScale);
             $sellerAsset->save();
 
-            $buyerAsset->amount = bcadd($buyerAsset->amount ?? '0', $amount, 8);
+            $buyerAsset->amount = bcadd($buyerAsset->amount ?? '0', $amount, $mathScale);
             $buyerAsset->save();
 
             // Credit seller with USD Proceeds minus commission? (we chose commission only from buyer, so seller receives full USD)
             $sellerProceeds = $usdVolume; // all USD goes to seller in this model
-            $seller->balance = bcadd($seller->balance, $sellerProceeds, 8);
+            $seller->balance = bcadd($seller->balance, $sellerProceeds, $mathScale);
             $seller->save();
 
             // Update orders as filled

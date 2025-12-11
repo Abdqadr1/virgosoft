@@ -4,8 +4,17 @@
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-4">
                     <router-link to="/" class="text-xl font-bold text-indigo-600">VirgoSoft</router-link>
-                    <router-link v-if="isLoggedIn" to="/" class="text-gray-600 hover:text-indigo-600">Wallet Overview</router-link>
-                    <router-link v-if="isLoggedIn" to="/limit-order" class="text-gray-600 hover:text-indigo-600">Limit Order</router-link>
+                </div>
+                
+                <div class="mx-auto flex gap-4">
+                    <router-link v-if="isLoggedIn" to="/" 
+                        class="py-2 text-gray-600 hover:text-indigo-600 rounded transition">
+                        Wallet Overview
+                    </router-link>
+                    <router-link v-if="isLoggedIn" to="/limit-order" 
+                        class="py-2 text-gray-600 hover:text-indigo-600 rounded transition">
+                        Limit Order
+                    </router-link>
                 </div>
 
                 <div>
@@ -36,7 +45,3 @@ const logout = () => {
     router.push("/login");
 };
 </script>
-
-<style scoped>
-/* small visual tweaks */
-</style>

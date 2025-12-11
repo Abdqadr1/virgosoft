@@ -8,13 +8,13 @@
             <section class="bg-white shadow rounded p-4">
                 <h2 class="text-xl font-semibold mb-2">Balances</h2>
                 <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-                    <div class="p-3 border rounded">
+                    <div class="p-3 inline-flex flex-col gap-2 border rounded">
                         <div class="text-xs text-gray-500">USD</div>
-                        <div class="font-mono">{{ Number(balance).toFixed(2) }}</div>
+                        <div class="font-mono text-sm">{{ formatCrypto(balance) }}</div>
                     </div>
-                    <div v-for="(asset, i) in assets" :key="asset.symbol || i" class="p-3 border rounded">
+                    <div v-for="(asset, i) in assets" :key="asset.symbol || i" class="p-3 inline-flex flex-col gap-2 border rounded">
                         <div class="text-xs text-gray-500">{{ asset.symbol }}</div>
-                        <div class="font-mono" :title="asset.amount">{{ Number(asset.amount).toFixed(2) }}</div>
+                        <div class="font-mono text-sm" :title="asset.amount">{{ formatCrypto(asset.amount) }}</div>
                     </div>
                 </div>
             </section>
@@ -33,9 +33,9 @@
                         <li v-for="trade in recentTrades" :key="trade.id"
                             class="flex justify-between font-mono text-sm">
                             <span>{{ trade.symbol }}</span>
-                            <span :title="trade.usd_volume">{{ Number(trade.usd_volume).toFixed(2)}}</span>
-                            <span :title="trade.amount">{{ Number(trade.amount).toFixed(2)}}</span>
-                            <span :title="trade.price">${{ Number(trade.price).toFixed(2) }}</span>
+                            <span :title="trade.usd_volume">{{ formatCrypto(trade.usd_volume)}}</span>
+                            <span :title="trade.amount">{{ formatCrypto(trade.amount)}}</span>
+                            <span :title="trade.price">${{ formatCrypto(trade.price) }}</span>
                         </li>
                     </ul>
                     <p v-else class="text-gray-500 text-sm">No recent trades available.</p>
@@ -64,13 +64,11 @@
                                     <td class="py-2 pr-4 font-mono">{{ o.id }}</td>
                                     <td class="py-2 pr-4">{{ o.symbol }}</td>
                                     <td class="py-2 pr-4 font-mono">{{ o.side }}</td>
-                                    <td class="py-2 pr-4 font-mono" :title="o.price">${{ Number(o.price).toFixed(2) }}</td>
-                                    <td class="py-2 pr-4 font-mono" :title="o.amount">{{ Number(o.amount).toFixed(2) }}</td>
-                                    <td class="py-2 pr-4 font-mono" :title="o.usd_amount">{{
-                                        Number(o.usd_amount).toFixed(2)}}</td>
+                                    <td class="py-2 pr-4 font-mono" :title="o.price">${{ formatCrypto(o.price) }}</td>
+                                    <td class="py-2 pr-4 font-mono" :title="o.amount">{{ formatCrypto(o.amount) }}</td>
+                                    <td class="py-2 pr-4 font-mono" :title="o.usd_amount">{{ formatCrypto(o.usd_amount) }}</td>
                                     <td class="py-2 pr-4">
-                                        <span class="px-2 py-0.5 rounded text-xs" :class="statusClass(o.status_name)">{{
-                                            o.status_name }}</span>
+                                        <span class="px-2 py-0.5 rounded text-xs" :class="statusClass(o.status_name)">{{ o.status_name }}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -88,6 +86,7 @@ import NavBar from "../components/NavBar.vue";
 import Swal from "sweetalert2";
 import useAuth from "../composables/useAuth";
 import { useOrders } from "../composables/useOrders";
+import { useFormat } from "../composables/useFormat";
 import api from "../api/axios";
 
 export default {
@@ -95,11 +94,13 @@ export default {
     setup() {
         const { fetchUser, user } = useAuth();
         const { fetchOrders, cancelOrder } = useOrders();
+        const { formatCrypto } = useFormat();
         return {
             user,
             fetchUser,
             fetchOrders,
-            cancelOrder
+            cancelOrder,
+            formatCrypto
         };
     },
     data() {
@@ -168,7 +169,7 @@ export default {
                 toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: `Trade matched: ${Number(trade.amount).toFixed(2)} ${trade.symbol} at $${Number(trade.price).toFixed(2)}`,
+                title: `Trade matched: ${trade.amount} ${trade.symbol} at $${trade.price}`,
                 showConfirmButton: false,
                 timer: 5000
             });

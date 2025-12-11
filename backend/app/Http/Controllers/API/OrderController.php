@@ -57,6 +57,10 @@ class OrderController extends Controller
      */
     public function cancel(Request $request, Order $order)
     {
+        // Ensure the order belongs to the user
+        if ($order->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $user = $request->user();
 
         $order = $this->orderService->cancelOrder($order->id, $user);

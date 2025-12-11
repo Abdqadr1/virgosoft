@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users', 'id')->cascadeOnDelete();
             $table->string('symbol', 10);
             $table->enum('side', ['buy', 'sell']);
-            $table->decimal('price', 28, 8);
-            $table->decimal('amount', 28, 8);
-            $table->decimal('usd_amount', 28, 8);
-            $table->decimal('commission', 28, 8)->default(0)->comment('commission in USD charged on buy order');
+            $table->decimal('price', 32, 16);
+            $table->decimal('amount', 32, 16);
+            $table->decimal('usd_amount', 32, 16);
+            $table->decimal('commission', 32, 16)->default(0)->comment('commission in USD charged on buy order');
             $table->tinyInteger('status')->default(1)->comment('1=open,2=filled,3=cancelled');
             $table->timestamps();
             $table->index(['symbol', 'side', 'price', 'status']);
@@ -31,10 +31,10 @@ return new class extends Migration
             $table->foreignId('buy_order_id')->constrained('orders', 'id')->noActionOnDelete();
             $table->foreignId('sell_order_id')->constrained('orders', 'id')->noActionOnDelete();
             $table->string('symbol', 10);
-            $table->decimal('price', 28, 8);
-            $table->decimal('amount', 28, 8);
-            $table->decimal('usd_volume', 28, 8);
-            $table->decimal('commission_usd', 28, 8);
+            $table->decimal('price', 32, 16);
+            $table->decimal('amount', 32, 16);
+            $table->decimal('usd_volume', 32, 16);
+            $table->decimal('commission_usd', 32, 16);
             $table->timestamps();
 
         });

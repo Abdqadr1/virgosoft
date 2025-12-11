@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Class Order
  * @property int $id
+ * @property int $user_id
  * @property float $commission
  * @property float $price
  * @property float $amount
