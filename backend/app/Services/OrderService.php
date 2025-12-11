@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService {
 
+    const MATCH_COMMISSION_RATE = '0.015'; // 1.5%
+
     public function createOrder(array $data, User $user)
     {
         return DB::transaction(function () use ($user, $data) {
@@ -46,7 +48,7 @@ class OrderService {
                 $dbUser->balance = bcsub($dbUser->balance, $totalUsd, $mathScale);
 
                 // Commission 1.5% of USD volume from buyer
-                $commission = bcmul($totalUsd, '0.015', $mathScale);
+                $commission = bcmul($totalUsd, static::MATCH_COMMISSION_RATE, $mathScale);
                 // check if user has enough balance to pay commission later during matching
                 if (bccomp($dbUser->balance, $commission, $mathScale) < 0) {
                     throw new OrderException('Insufficient USD balance to cover commission', 422);
@@ -111,6 +113,8 @@ class OrderService {
             }
             $order->status = OrderStatus::CANCELLED;
             $order->save();
+
+            return $order->fresh();
         });
     }
 

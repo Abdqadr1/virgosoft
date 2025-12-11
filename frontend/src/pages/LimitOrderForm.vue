@@ -34,7 +34,7 @@
                     <!-- Amount -->
                     <div>
                         <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
-                        <input id="amount" type="number" step="0.0001" min="0" v-model.number="amount"
+                        <input id="amount" type="number" step="0.000000000000001" min="0" v-model.number="amount"
                             placeholder="Enter amount"
                             class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-gray-400 focus:ring-0 focus:outline-none" />
                     </div>
