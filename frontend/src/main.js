@@ -29,7 +29,7 @@ function initEcho() {
         forceTLS: true,
 
         // IMPORTANT WHEN FRONTEND IS SEPARATE
-        authEndpoint: `${import.meta.env.VITE_SERVER_URL}/api/broadcasting/auth`,
+        authEndpoint: `${import.meta.env.VITE_API_URL}/broadcasting/auth`,
         auth: {
             headers: {
                 Authorization: `Bearer ${token}`,

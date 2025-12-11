@@ -1,237 +1,112 @@
-# 🧭 Laravel + Vue.js Exchange Order Matching System
+# Project Setup Guide
 
-Technical Assessment – Full Stack (Laravel API + Vue.js + Real-Time)
-
-## 📌 Overview
-
-This project is a mini crypto exchange simulation built with **Laravel** (API backend) and **Vue.js** (frontend). It implements a safe and scalable system for managing balances, assets, limit orders, and a real-time matching engine using **Pusher + Laravel Broadcasting**.
-
-The system focuses heavily on **financial data integrity**, **concurrency safety**, **atomic transactions**, and **instant UI updates**.
+This README provides complete setup instructions for both the **Laravel backend** and the **Vue 3 frontend** using Pusher for real-time broadcasting.
 
 ---
 
-## 🚀 Tech Stack
+## 📦 Requirements
 
-### Backend Setup
-
-* Laravel (latest)
-* MySQL/PostgreSQL
-* Laravel Broadcasting (Pusher)
-* Laravel Sanctum (Authentication)
-
-### Frontend
-
-* Vue.js 3 (Composition API)
-* Vite
-* TailwindCSS
-* Pusher JS client
+* PHP 8.2+
+* Composer
+* Node.js 20+
+* Yarn or NPM
+* Laravel 12+
+* Vue 3 + Vite
+* Pusher account (app key, secret, cluster)
 
 ---
 
-## 🛠 Features Implemented
+# 🚀 Backend Setup (Laravel)
 
-### 1. User Wallet & Assets
+## 1. Clone the Repository
 
-Each user has:
+```bash
+git clone https://github.com/Abdqadr1/virgosoft.git
+cd backend
+```
 
-* **USD balance**
-* **Crypto assets** (BTC, ETH)
-* **Locked balances** (for open orders)
+## 2. Install Dependencies
 
----
-
-### 2. Limit Orders (Buy/Sell)
-
-API supports:
-
-* Creating limit buy orders
-* Creating limit sell orders
-* Canceling open orders
-* Viewing orderbook
-
-All logic uses:
-
-* **Database transactions**
-* **Row-level locking**
-* **Race-condition safe checks**
-
----
-
-### 3. Matching Engine (Full Match Only)
-
-Rules implemented:
-
-* BUY matches first SELL with `sell.price <= buy.price`
-* SELL matches first BUY with `buy.price >= sell.price`
-* No partial fills (strict full match)
-* Commission applied at **1.5%**
-
-Commission is deducted from:
-
-* **Buyer’s USD** (chosen consistently)
-
-Matching handled by:
-
-* Internal service class
-* Triggered synchronously when a new order is created
-
----
-
-### 4. Real-Time Notifications (Pusher)
-
-When a match occurs:
-
-* `OrderMatched` event is broadcast
-* Both users receive:
-
-  * Updated wallet balances
-  * Updated asset amounts
-  * Updated order statuses
-
-Frontend listens on:
-`private-user.{id}`
-
----
-
-## 📡 API Endpoints
-
-### 🔐 Authentication
-
-| Method | Endpoint      | Description                |
-| ------ | ------------- | -------------------------- |
-| POST   | `/api/login`  | Login using email/password |
-| POST   | `/api/logout` | Logout                     |
-
----
-
-### 👤 Profile
-
-| Method | Endpoint       | Description                            |
-| ------ | -------------- | -------------------------------------- |
-| GET    | `/api/profile` | Returns USD + asset balances + summary |
-
----
-
-### 📈 Orders
-
-| Method | Endpoint                  | Description                         |
-| ------ | ------------------------- | ----------------------------------- |
-| GET    | `/api/orders?symbol=BTC`  | List user's open orders + orderbook |
-| POST   | `/api/orders`             | Create a buy/sell limit order       |
-| POST   | `/api/orders/{id}/cancel` | Cancel an open order                |
-
----
-
-## 📟 Frontend Screens
-
-### 1. Limit Order Form
-
-Includes:
-
-* Symbol selector (BTC/ETH)
-* Side (BUY/SELL)
-* Price input
-* Amount input
-* Instant USD/volume preview
-
-### 2. Wallet + Orders Page
-
-Shows:
-
-* USD balance
-* Asset balances
-* Open orders
-* Filled orders
-* Cancelled orders
-* Real-time updates when:
-
-  * A match happens
-  * Balance changes
-  * Order status updates
-
----
-
-## ⚙️ Setup Instructions
-
-### Backend
-
-```plaintext
-cp .env.example .env
+```bash
 composer install
+```
+
+## 3. Create Environment File
+
+```bash
+cp .env.example .env
+```
+
+Update the following fields in your `.env`:
+
+```env
+APP_URL=http://127.0.0.1:8000
+
+PUSHER_APP_ID=your-app-id
+PUSHER_APP_KEY=your-app-key
+PUSHER_APP_SECRET=your-app-secret
+PUSHER_APP_CLUSTER=your-cluster
+
+BROADCAST_DRIVER=pusher
+```
+
+## 4. Generate Application Key
+
+```bash
 php artisan key:generate
+```
+
+## 5. Run Migrations
+
+```bash
 php artisan migrate --seed
 ```
 
-#### Start the server
+## 6. Serve the Backend
 
-```plaintext
-php artisan serve
+```bash
+composer run dev
 ```
-
-### Start queue worker (if used)
-
-```plaintext
-php artisan queue:work
-```
+This will serve the backend, start the queue and so on.
+Backend will be available at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**.
+You can also view the API documentation page at: **[http://127.0.0.1:8000/docs/api](http://127.0.0.1:8000/docs/api)**.
 
 ---
 
-### Frontend Setup
+# 🎨 Frontend Setup (Vue 3 + Vite)
 
-```plaintext
+## 1. Navigate to Frontend Folder
+
+```bash
+cd frontend
+```
+
+## 2. Install Dependencies
+
+```bash
+yarn
+# OR
 npm install
+```
+
+## 4. Create Environment Variables
+
+Create a `.env` file:
+
+```env
+VITE_API_URL="http://127.0.0.1:8000/api"
+VITE_PUSHER_APP_KEY=your-app-key
+VITE_PUSHER_APP_CLUSTER=your-cluster
+```
+
+## 5. Serve the frontend
+
+```bash
 npm run dev
 ```
 
 ---
 
-## 🔒 Concurrency & Safety Measures
+# ✅ Done
 
-This project uses:
-
-### ✔ Database transactions (`DB::transaction()`)
-
-Ensures wallet + asset updates are atomic.
-
-### ✔ `FOR UPDATE` row locking
-
-Prevents race conditions on:
-
-* Balances
-* Asset rows
-* Orders
-
-### ✔ Validation of all financial values
-
-* Prevent negative balances
-* Prevent floating-point drift (decimal fields used)
-
----
-
-## 📬 Event Broadcasting
-
-On match:
-
-```plaintext
-OrderMatched {
-  buyer_id
-  seller_id
-  symbol
-  price
-  amount
-  fee
-}
-```
-
-Broadcast channels:
-
-* `private-user.{id}`
-
----
-
-## 📦 Deployment Notes
-
-* Use Supervisor for queues
-* Pusher credentials must be set in `.env`
-* Use HTTPS for broadcasting
-* Ensure DB isolation level is `REPEATABLE READ` or higher
+Both backend and frontend are now set up for real-time private channel broadcasting using Pusher Cloud.
