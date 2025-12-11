@@ -3,6 +3,6 @@
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel(
-    'user.{id}',
+    'match-up.{id}',
     fn($user, $id) => intval($user->id) === intval($id)
 );

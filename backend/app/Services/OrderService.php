@@ -166,9 +166,9 @@ class OrderService {
     {
         return DB::transaction(function () use ($user, $data) {
 
-            $price = Token::where('symbol', $data['symbol'])->value('price');
+            $price = Token::where('symbol', $data['symbol'])->value('price_usd');
             $totalUsd = bcmul($price, $data['amount'], 8);
-            $order = Order::fill([
+            $order = new Order([
                 'user_id' => $user->id,
                 'symbol' => $data['symbol'],
                 'side' => $data['side'],

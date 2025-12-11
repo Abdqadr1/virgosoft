@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class MatchingService {
 
     // Matching - full matches only (no partial)
-    public function attempt(Order $newOrder)
+    public static function attempt(Order $newOrder)
     {
         // We'll attempt to find the first matching counter order according to rules.
         // Full-match only: candidate.amount == newOrder.amount
@@ -102,8 +102,6 @@ class MatchingService {
             // Update orders as filled
             $order->status = OrderStatus::FILLED;
             $counter->status = OrderStatus::FILLED;
-            $order->filled_amount = $amount;
-            $counter->filled_amount = $amount;
             $order->save();
             $counter->save();
 
@@ -119,7 +117,6 @@ class MatchingService {
             ]);
 
             // Broadcast OrderMatched event to both users
-            // OrderMatched will contain trade and updated balances/assets and order ids
             event(new OrderMatched($trade, [$buyer->id, $seller->id]));
         });
     }

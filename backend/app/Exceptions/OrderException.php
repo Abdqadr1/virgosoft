@@ -18,7 +18,7 @@ class OrderException extends Exception
     public function render(): JsonResponse
     {
         return response()->json([
-            'error' => $this->message,
+            'message' => $this->message,
         ], $this->statusCode);
     }
 }

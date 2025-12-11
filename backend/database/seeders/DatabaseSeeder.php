@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,9 +17,19 @@ class DatabaseSeeder extends Seeder
             ['email' => 'platform@exchange.local'],
             [
                 'name' => 'Platform Account',
-                'password' => bcrypt('secret'),
-                'balance' => 0,
+                'password' => Hash::make('secret'),
                 'email_verified_at' => now(),
+                'balance' => 1000
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'second@exchange.local'],
+            [
+                'name' => 'Second Account',
+                'password' => Hash::make('secret'),
+                'email_verified_at' => now(),
+                'balance' => 550
             ]
         );
     }

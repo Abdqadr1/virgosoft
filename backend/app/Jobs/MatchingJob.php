@@ -28,8 +28,8 @@ class MatchingJob implements ShouldQueue, ShouldBeUnique
     /**
      * Execute the job.
      */
-    public function handle(MatchingService $matchingService): void
+    public function handle(): void
     {
-        $matchingService->attempt($this->order);
+        MatchingService::attempt($this->order);
     }
 }

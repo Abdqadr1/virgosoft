@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use App\Enums\OrderSide;
-use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
@@ -22,13 +23,15 @@ class OrderController extends Controller
      */
     public function list(Request $request)
     {
-        $symbol = $request->query('symbol', 'BTC');
-        $orders = Order::where('symbol', $symbol)
-                    ->where('status', OrderStatus::OPEN)
+        $symbol = $request->query('symbol');
+        $orders = Order::where('user_id', Auth::id())
+                    ->when($symbol, function ($query, $symbol) {
+                        $query->where('symbol', $symbol);
+                    })
                     ->latest()
                     ->get();
 
-        return response()->json($orders);
+        return response()->json( JsonResource::collection($orders) );
     }
 
     /**

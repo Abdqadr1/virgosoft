@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@laravel/echo-vue": "^2.2.6",
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
     "sweetalert2": "^11.26.4",

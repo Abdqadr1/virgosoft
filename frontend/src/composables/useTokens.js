@@ -1,9 +1,9 @@
 import { ref } from "vue";
 import api from "../api/axios";
 
-const profile = ref(null);
+const tokens = ref([]);
 
-export function useWallet() {
+export function useTokens() {
     const fetchProfile = async () => {
         const { data } = await api.get('/profile');
         profile.value = data;

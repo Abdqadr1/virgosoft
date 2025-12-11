@@ -4,8 +4,8 @@
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-4">
                     <router-link to="/" class="text-xl font-bold text-indigo-600">VirgoSoft</router-link>
-                    <router-link v-if="isLoggedIn" to="/dashboard"
-                        class="text-gray-600 hover:text-indigo-600">Dashboard</router-link>
+                    <router-link v-if="isLoggedIn" to="/" class="text-gray-600 hover:text-indigo-600">Wallet Overview</router-link>
+                    <router-link v-if="isLoggedIn" to="/limit-order" class="text-gray-600 hover:text-indigo-600">Limit Order</router-link>
                 </div>
 
                 <div>

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float $commission
  * @property float $price
  * @property float $amount
+ * @property string $status_name
  * @property OrderStatus $status
  * @property OrderSide $side
  */
@@ -23,6 +24,13 @@ class Order extends Model
         'status' => OrderStatus::class,
         'side' => OrderSide::class,
     ];
+
+    protected $appends = ['status_name'];
+
+    public function getStatusNameAttribute(): string
+    {
+        return $this->status->name;
+    }
 
     public function user(): BelongsTo
     {

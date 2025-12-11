@@ -13,7 +13,7 @@ class UserController extends Controller
 {
 
     /**
-     * Show authenticated user with balance and assets
+     * Show authenticated user's balance and assets
      */
     public function show(Request $request)
     {
@@ -21,6 +21,7 @@ class UserController extends Controller
         $user->loadMissing(['assets']);
 
         return response()->json([
+            'id' => $user->id,
             'balance' => $user->balance,
             'assets' => $user->assets,
         ]);
@@ -38,7 +39,14 @@ class UserController extends Controller
             'password' => 'required|string',
         ]);
 
+        
         $user = User::where('email', $request->input('email'))->first();
+        
+        if (! $user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
 
         if (empty($user->email_verified_at)) {
             return response()->json(
@@ -49,14 +57,7 @@ class UserController extends Controller
                 Response::HTTP_FORBIDDEN
             );
         }
-
-
-        if (! $user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
+        
         $token =  $user->createToken($request->device_name ?? $user->email)->plainTextToken;
 
         return [

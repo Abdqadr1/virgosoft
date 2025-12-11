@@ -3,13 +3,10 @@ import { useRouter } from "vue-router";
 import api from "../api/axios";
 import Swal from "sweetalert2";
 
-const user = ref(null);
 const token = ref(localStorage.getItem("auth_token") || "");
 const isLoggedIn = ref(!!token.value);
-const isLoaded = ref(false);
 
 watch(token, (val) => {
-    // keep localStorage in sync using the unified key "auth_token"
     if (val) localStorage.setItem("auth_token", val);
     else localStorage.removeItem("auth_token");
     isLoggedIn.value = !!val;
@@ -20,14 +17,8 @@ export default function useAuth() {
 
     // Fetch authenticated user
     const fetchUser = async () => {
-        try {
-            const { data } = await api.get("/profile");
-            user.value = data;
-        } catch {
-            user.value = null;
-        } finally {
-            isLoaded.value = true;
-        }
+        const { data } = await api.get("/profile");
+        return data;
     };
 
     const checkAuth = async () => {
@@ -37,12 +28,10 @@ export default function useAuth() {
             return false;
         }
         token.value = t;
-        // optionally fetch profile when token exists
-        await fetchUser();
         return true;
     };
 
-    const login = async (email, password) => {
+    const login = async (email, password, route = '/') => {
         try {
             const response = await api.post("/authenticate", { email, password });
             if (!response.data || !response.data.token) {
@@ -51,20 +40,21 @@ export default function useAuth() {
             }
             // persist token and user
             token.value = response.data.token;
-            localStorage.setItem("auth_user", JSON.stringify(response.data.user || null));
             user.value = response.data.user || null;
+            localStorage.setItem("auth_user", JSON.stringify(response.data.user || null));
+            localStorage.setItem("auth_token", JSON.stringify(response.data.token || null));
 
             // redirect after login
-            router.push("/");
+            router.push(route);
         } catch (err) {
             Swal.fire("Login Failed", err?.response?.data?.message || "Invalid credentials", "error");
         }
     };
 
     const logout = async () => {
-        clearStorage();
         token.value = "";
         user.value = null;
+        clearStorage();
         router.push("/login");
     };
 
@@ -75,6 +65,7 @@ export default function useAuth() {
 
     const setToken = (t) => {
         token.value = t;
+        localStorage.setItem("auth_token", t);
     };
 
     const clear = () => {
@@ -84,8 +75,6 @@ export default function useAuth() {
     };
 
     return {
-        user,
-        isLoaded,
         fetchUser,
         checkAuth,
         login,
